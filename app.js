@@ -962,4 +962,33 @@ document.getElementById("barcode-input").addEventListener("keypress", function(e
             });
     }
 });
+document.getElementById("mpesa-pay-btn").addEventListener("click", function () {
+    const phone = document.getElementById("customer-phone").value.trim();
+
+    if (!phone) {
+        alert("Please enter customer phone number");
+        return;
+    }
+
+    fetch("stk.php", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/x-www-form-urlencoded"
+        },
+        body: `phone=${encodeURIComponent(phone)}`
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.ResponseCode === "0") {
+            alert("STK Push sent successfully! Check your phone.");
+        } else {
+            alert("Failed to initiate STK Push: " + data.ResponseDescription);
+        }
+    })
+    .catch(err => {
+        console.error(err);
+        alert("An error occurred. Please try again.");
+    });
+});
+
 

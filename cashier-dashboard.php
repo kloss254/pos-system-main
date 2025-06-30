@@ -278,7 +278,10 @@ body {
 
                         <div class="payment-options">
                             <button class="payment-method-btn active" data-method="Cash"><i class="fas fa-money-bill-wave"></i> Cash</button>
-                            <button class="payment-method-btn active" data-method="Mpesa"><i class="fas fa-mobile-alt"></i> Mpesa</button>
+                           <button id="mpesa-pay-btn" style="background-color: green; color: white; border: none; padding: 10px 20px; border-radius: 5px;">
+    Pay via M-Pesa
+</button>
+
                         </div>
 
                         <div class="checkout-actions">
@@ -398,6 +401,54 @@ body {
     document.getElementById("no-products-message").style.display = anyVisible ? "none" : "block";
 
     });
+    document.querySelector('[data-method="Cash"]').addEventListener('click', () => {
+    const totalText = document.getElementById('total-cashier').textContent.replace('Ksh', '').trim();
+    const totalAmount = parseFloat(totalText);
+
+    const amountPaid = prompt(`Customer's Total is Ksh${totalAmount}. Enter amount paid:`);
+
+    if (amountPaid !== null && !isNaN(amountPaid)) {
+        const change = parseFloat(amountPaid) - totalAmount;
+        if (change < 0) {
+            alert(`Insufficient amount. Customer still owes Ksh${Math.abs(change).toFixed(2)}`);
+        } else {
+            alert(`Payment accepted.\nChange to return: Ksh${change.toFixed(2)}`);
+        }
+    }
+});
+document.getElementById('mpesa-pay-btn').addEventListener('click', () => {
+    const phone = document.getElementById('customer-phone').value.trim();
+    const totalText = document.getElementById('total-cashier').textContent.replace(/[^\d.]/g, '');
+    const amount = parseFloat(totalText);
+
+    if (!phone || isNaN(amount) || amount <= 0) {
+        alert("Enter valid phone number and total amount.");
+        return;
+    }
+
+    fetch('stk.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ phone, amount })
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.ResponseCode === "0") {
+            alert("M-Pesa STK Push sent successfully. Enter PIN on your phone.");
+        } else {
+            alert("STK Push failed: " + (data.errorMessage || 'Unknown error.'));
+            console.error(data);
+        }
+    });
+});
+
+})
+.catch(err => {
+    alert("Failed to reach backend.");
+    console.error(err);
+});
+
+
 
     </script>
 </body>
